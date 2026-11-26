@@ -1,0 +1,54 @@
+{
+  "benchmark": "real-time-data-platform-day01",
+  "environment": {
+    "platform": "macOS-27.2.1-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "python_version": "3.14.7",
+    "sql_engine": "duckdb"
+  },
+  "configuration": {
+    "seed": 20261126,
+    "num_partitions": 8,
+    "batch_size": 1000,
+    "num_unique_events": 10000,
+    "num_duplicates": 1000,
+    "num_invalid": 200,
+    "total_submitted_payloads": 11200
+  },
+  "throughput": {
+    "ingest_elapsed_sec": 0.2423,
+    "ingest_payloads_per_sec": 46232.53,
+    "warehouse_elapsed_sec": 14.4238,
+    "warehouse_records_per_sec": 762.63,
+    "end_to_end_elapsed_sec": 14.666,
+    "end_to_end_payloads_per_sec": 763.67
+  },
+  "micro_batch_latency_ms": {
+    "batches": 11,
+    "p50_ms": 1297.832,
+    "p95_ms": 1360.619,
+    "p99_ms": 1367.872,
+    "max_ms": 1369.685,
+    "mean_ms": 1311.251
+  },
+  "verification": {
+    "valid_produced": 11000,
+    "dead_letter_produced": 200,
+    "warehouse_unique_events": 10000,
+    "duplicates_dropped": 1000,
+    "expected_total_amount_cents": 99957248,
+    "observed_total_amount_cents": 99957248,
+    "amount_conservation_verified": true,
+    "consumer_total_lag": 0,
+    "partition_watermarks": {
+      "0": 4085,
+      "1": 2088,
+      "2": 644,
+      "3": 0,
+      "4": 754,
+      "5": 1367,
+      "6": 680,
+      "7": 1382
+    }
+  }
+}
