@@ -12,10 +12,12 @@ services:
     ports:
       - "19092:19092"
 
-  stream-processor:
-    build: .
-    depends_on:
-      - redpanda
+  stream-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
     environment:
       KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
-      KAFKA_TOPIC: commerce.telemetry.v1
+    command: ["python", "-B", "-m", "rt_data_platform.cli", "demo"]
+    depends_on:
+      - redpanda

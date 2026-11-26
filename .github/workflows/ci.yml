@@ -2,42 +2,41 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
+    branches: ["main", "milestone/**"]
   pull_request:
+    branches: ["main"]
 
 permissions:
   contents: read
 
 jobs:
   verify:
-    name: Python, DuckDB & Stream Processor Verification
+    name: Python, Kafka Partitioning, DuckDB SQL & BigQuery Verification
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: "pip"
 
-      - name: Install pinned dependencies
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
+          python -m pip install -e .
 
-      - name: Compile all Python modules
-        run: |
-          python -m py_compile platform_core/*.py cmd_demo.py benchmark.py tests/*.py
+      - name: Run syntax and bytecode check
+        run: python -m py_compile src/rt_data_platform/*.py tests/*.py
 
-      - name: Run unit and warehouse reconciliation tests
-        run: |
-          python -B -m unittest discover -s tests -v
+      - name: Run unit and integration test suite
+        run: pytest -v
 
-      - name: Run CLI demonstration and benchmark verification
-        run: |
-          python -B cmd_demo.py >/dev/null
-          python -B benchmark.py --events 10000 --batch-size 1000 >/dev/null
+      - name: Run streaming recovery demonstration
+        run: python -B -m rt_data_platform.cli demo
+
+      - name: Run reproducible benchmark verification
+        run: python -B -m rt_data_platform.cli benchmark --events 5000 --partitions 8 --output /tmp/ci_benchmark.json

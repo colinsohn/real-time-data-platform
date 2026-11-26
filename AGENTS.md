@@ -1,13 +1,15 @@
-# Agent Guidelines (`AGENTS.md`) — Real-Time Data Platform
+# Agent Guidelines (`real-time-data-platform`)
 
-- **Repository Owner**: **Autonomous Portfolio Engineering** (`colinsohn/real-time-data-platform`).
-- **Commit Identity**: `Colin Sohn <183441695+colinsohn@users.noreply.github.com>`.
-- **Verification Before Commit**:
-  1. `python3 -m py_compile platform_core/*.py cmd_demo.py benchmark.py tests/*.py`
-  2. `python3 -B -m unittest discover -s tests -v`
-  3. `python3 -B cmd_demo.py`
-  4. `python3 -B benchmark.py --events 50000 --report reports/stream_benchmark.json`
-- **Cost & Security Guardrails**:
-  - Never execute billable BigQuery or cloud API calls without explicit user authorization; test warehouse logic locally with DuckDB and verify BigQuery compatibility via generated DDL and JSONL/Parquet exports.
-  - Never commit secrets, raw data files, `.venv/`, or `.duckdb` database files.
-  - After every `git push origin main`, verify `git ls-remote --heads origin refs/heads/main` matches `git rev-parse HEAD` and confirm GitHub Actions CI passes (`gh run list`).
+Updated November 26, 2026 (Pacific).
+
+1. **Repository Ownership**: Managed by **Autonomous Portfolio Engineering** under `/Users/colinsohn/Documents/ChatGPT/Career/portfolio-build/real-time-data-platform`. Always check `git status -sb` and `WORKLOG.md` before starting a milestone.
+2. **Zero Cloud/API Cost**: Execute all tests, SQL transformations, and benchmarks locally using embedded DuckDB (or SQLite fallback) and the deterministic partitioned Kafka log engine. Never invoke billable GCP BigQuery APIs without explicit user authorization.
+3. **Verification Before Commit**:
+   ```sh
+   PYTHONPATH=src python3 -B -m unittest discover -s tests -v
+   PYTHONPATH=src python3 -B -m rt_data_platform.cli demo
+   PYTHONPATH=src python3 -B -m rt_data_platform.cli benchmark --output reports/benchmark_day01.json
+   ```
+4. **Commit & Push Discipline**:
+   - Commit as `Colin Sohn <183441695+colinsohn@users.noreply.github.com>`.
+   - Verify remote `origin/main` matches local `HEAD` and GitHub Actions CI passes (`gh run list`).

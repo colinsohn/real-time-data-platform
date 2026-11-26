@@ -1,15 +1,16 @@
-# syntax=docker/dockerfile:1
-
 FROM python:3.12-slim
+
 WORKDIR /app
 
-COPY requirements.txt ./
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app/src
+
+COPY requirements.txt pyproject.toml README.md ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY platform_core ./platform_core
-COPY cmd_demo.py benchmark.py ./
+COPY src/ ./src/
+COPY tests/ ./tests/
+COPY sql/ ./sql/
 
-RUN useradd --create-home --shell /bin/bash appuser
-USER appuser
-
-CMD ["python", "-B", "cmd_demo.py"]
+CMD ["python", "-B", "-m", "rt_data_platform.cli", "demo"]

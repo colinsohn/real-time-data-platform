@@ -1,25 +1,27 @@
-# 21-Day Development Roadmap — Real-Time Data Platform
+# 21-Day Development Roadmap (`real-time-data-platform`)
 
-| Day | Milestone | Status |
-| --- | --- | --- |
-| **Day 1** | Canonical Kafka event schema, deterministic partition router, BigQuery partitioned/clustered DDL generator, and unit tests. | **Completed (Nov 26, 2026)** |
-| **Day 2** | Stateful stream processor (bounded LRU `event_id` deduplication, per-partition event-time watermarks, tumbling windows, DLQ) + DuckDB warehouse sink, reconciliation verifier, benchmark, and GitHub Actions CI. | **Completed (Nov 26, 2026)** |
-| **Day 3** | Persistent consumer offset checkpointing and crash/replay recovery tests verifying zero double-counting across restarts. | Pending |
-| **Day 4** | Sliding and session window aggregators with configurable gap timeouts and memory-bounded state eviction. | Pending |
-| **Day 5** | Schema evolution and compatibility registry (v1 -> v2 backward/forward field migration and schema-drift rejection). | Pending |
-| **Day 6** | Dead-Letter Queue (DLQ) replay CLI with quarantine inspection, payload repair rules, and audit trail logging. | Pending |
-| **Day 7** | Partition rebalance coordinator (assigning/revoking partition state cleanly when consumer group membership changes). | Pending |
-| **Day 8** | BigQuery incremental `MERGE` loader and local Parquet partition compactor (`year=.../month=.../day=...`). | Pending |
-| **Day 9** | Out-of-order skew and hot-partition stress harness (Zipfian account traffic + straggler partition watermark advancement). | Pending |
-| **Day 10** | Real-time anomaly and velocity detector (sliding-window refund spikes and high-frequency authorization alerts). | Pending |
-| **Day 11** | Incremental SQL materialized views for hourly/daily cohort retention and net revenue reconciliation. | Pending |
-| **Day 12** | Backpressure and bounded in-memory queue control between Kafka fetcher threads and DuckDB/Parquet flush workers. | Pending |
-| **Day 13** | End-to-end Docker Compose integration test against a live Redpanda/Kafka broker container. | Pending |
-| **Day 14** | Late-data side-output reconciliation (updating historical warehouse partitions with bounded retraction records). | Pending |
-| **Day 15** | Observability and health metrics endpoint (`/metrics` and `/healthz` exposing watermark lag, DLQ rate, and sink latency). | Pending |
-| **Day 16** | Multi-worker parallel partition execution benchmark (scaling across 1, 2, 4, and 8 cores). | Pending |
-| **Day 17** | Data quality SLA monitor (automated freshness, volume, and null-rate assertions on warehouse tables). | Pending |
-| **Day 18** | Fault-injection test suite (simulated sink write failures, partial batch rollbacks, and corrupt JSON payloads). | Pending |
-| **Day 19** | Cost-optimized BigQuery storage layout benchmark (comparing clustered vs. unclustered scan bytes). | Pending |
-| **Day 20** | Fresh-clone reproducibility verification and interactive CLI walkthrough. | Pending |
-| **Day 21** | Final release audit, trade-off analysis, and measured benchmark portfolio report. | Pending |
+Timeline: **November 26 – December 16, 2026** (Active New Project Slot 1/2).
+
+| Day | Date | Status | Milestone | Verification Command |
+| --- | --- | :---: | --- | --- |
+| **Day 1** | Nov 26 | `[x]` | **Event Contract, Partitioned Kafka Log Engine, SQL Warehouse Loader & Baseline Benchmark**: Versioned v1.0 schema validator, structured dead-letter quarantine (`events.dlq.v1`), Kafka `murmur2` partitioner, CRC32-verified partitioned topic log with consumer-group offset commits, DuckDB SQL micro-batch deduplication & hourly rollup loader, BigQuery partitioned/clustered DDL & `MERGE` compiler, Docker setup, unit/integration tests, and 10k-event benchmark (`reports/benchmark_day01.json`). | `pytest -v && python3 -B -m rt_data_platform.cli benchmark --output reports/benchmark_day01.json` |
+| **Day 2** | Nov 27 | `[ ]` | **Schema Evolution Registry & Dead-Letter Replay Metadata**: Backward/full schema compatibility validator and structured DLQ inspection queries. | `pytest -v` |
+| **Day 3** | Nov 28 | `[ ]` | **Event-Time Watermarking & Bounded Out-of-Orderness**: Per-partition event-time watermark tracker and late-event side-output routing. | `pytest -v` |
+| **Day 4** | Nov 29 | `[ ]` | **Two-Phase Checkpoint Manifest & Idempotent Batch Ledger**: Persistent batch commit ledger recording `(batch_id, partition, start_offset, end_offset, sha256)` inside the warehouse transaction. | `pytest -v` |
+| **Day 5** | Nov 30 | `[ ]` | **Tumbling & Sliding Window SQL Aggregations**: 1-minute, 5-minute, and 1-hour windowed aggregations with batch-SQL parity checks. | `pytest -v` |
+| **Day 6** | Dec 1 | `[ ]` | **Session Windowization & Out-of-Order Session Merging**: Dynamic inactivity-gap sessionizer merging split intervals when out-of-order bridge events arrive. | `pytest -v` |
+| **Day 7** | Dec 2 | `[ ]` | **BigQuery Partition-Pruned MERGE Optimizer**: Partition-filter pushdown (`WHERE target.event_date IN (...)`) reducing BigQuery `MERGE` bytes scanned. | `pytest -v` |
+| **Day 8** | Dec 3 | `[ ]` | **Columnar Parquet Micro-Batch Sink & Compression Audit**: Batched Parquet export with SHA-256 manifest verification. | `pytest -v` |
+| **Day 9** | Dec 4 | `[ ]` | **Consumer Group Rebalance & Partition Revocation Simulation**: Cooperative sticky partition assignment and pre-revocation flush hooks. | `pytest -v` |
+| **Day 10** | Dec 5 | `[ ]` | **Backpressure, Rate Limiting & Bounded Prefetch Queues**: Token-bucket producer throttling and lag-driven consumer backpressure. | `pytest -v` |
+| **Day 11** | Dec 6 | `[ ]` | **Data Quality Assertions & Drift Monitors**: SQL batch quality gates blocking staging promotion on anomaly thresholds. | `pytest -v` |
+| **Day 12** | Dec 7 | `[ ]` | **Dead-Letter Repair & Replay CLI**: Transactional repair and re-ingestion workflow for quarantined `events.dlq.v1` payloads. | `pytest -v` |
+| **Day 13** | Dec 8 | `[ ]` | **Multi-Container Docker Compose Redpanda/Kafka Integration Harness**: Containerized end-to-end smoke verification against Redpanda/Kafka. | `docker compose config && pytest -v` |
+| **Day 14** | Dec 9 | `[ ]` | **Crash-Injection & Offset-Rollback Chaos Harness**: Multi-worker fault-injection suite verifying zero duplicate or lost cents under random worker kills. | `pytest -v` |
+| **Day 15** | Dec 10 | `[ ]` | **Point-in-Time SCD Type 2 Dimension Enrichment**: Temporal SQL join enriching streaming events with historical customer tier dimensions. | `pytest -v` |
+| **Day 16** | Dec 11 | `[ ]` | **Pipeline Observability, Consumer Lag & Watermark Skew Endpoints**: JSON diagnostics and Prometheus-compatible metrics exporter. | `pytest -v` |
+| **Day 17** | Dec 12 | `[ ]` | **BigQuery Storage Write API vs. GCS Parquet Load Cost Model**: Quantitative cost and latency analysis in `DEPLOYMENT.md` (zero live spend). | `pytest -v` |
+| **Day 18** | Dec 13 | `[ ]` | **Vectorized Batch Ingestion & Profiling Optimization**: Profile and optimize batch ingestion path with measured before/after benchmark. | `pytest -v` |
+| **Day 19** | Dec 14 | `[ ]` | **Multi-Tenant Zipfian Skew & Hot-Partition Stress Benchmark**: Measure partition skew and throughput under uniform vs. power-law tenant traffic. | `pytest -v` |
+| **Day 20** | Dec 15 | `[ ]` | **Fresh-Clone Reproduction & End-to-End Walkthrough**: Single-command fresh-clone verification and operational walkthrough. | `pytest -v` |
+| **Day 21** | Dec 16 | `[ ]` | **Final Release Audit & Capacity Transition**: Verify all acceptance criteria and release concurrency slot for `distributed-kv-store`. | `pytest -v` |
