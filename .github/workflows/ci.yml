@@ -22,6 +22,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: "pip"
+          cache-dependency-path: "requirements.txt"
 
       - name: Install dependencies
         run: |
@@ -30,13 +31,19 @@ jobs:
           python -m pip install -e .
 
       - name: Run syntax and bytecode check
-        run: python -m py_compile src/rt_data_platform/*.py tests/*.py
+        run: python -m py_compile src/rt_data_platform/*.py platform_core/*.py benchmark.py cmd_demo.py tests/*.py
 
       - name: Run unit and integration test suite
-        run: pytest -v
+        run: |
+          pytest -v
+          PYTHONPATH=.:src python -B -m unittest discover -s tests -v
 
       - name: Run streaming recovery demonstration
-        run: python -B -m rt_data_platform.cli demo
+        run: |
+          python -B -m rt_data_platform.cli demo >/dev/null
+          python -B cmd_demo.py >/dev/null
 
       - name: Run reproducible benchmark verification
-        run: python -B -m rt_data_platform.cli benchmark --events 5000 --partitions 8 --output /tmp/ci_benchmark.json
+        run: |
+          python -B -m rt_data_platform.cli benchmark --events 5000 --partitions 8 --output /tmp/ci_benchmark.json >/dev/null
+          python -B benchmark.py --events 5000 --batch-size 1000 >/dev/null

@@ -7,6 +7,8 @@ from pathlib import Path
 import tempfile
 import unittest
 
+from benchmark import run_benchmark as run_watermarked_benchmark
+from cmd_demo import run_demo as run_watermarked_demo
 from rt_data_platform.cli import run_benchmark
 from rt_data_platform.contract import validate_raw_event
 from rt_data_platform.kafka_log import PartitionedTopicLog, kafka_murmur2, partition_for_key
@@ -211,6 +213,19 @@ class TestRealTimeDataPlatform(unittest.TestCase):
         self.assertEqual(report["verification"]["duplicates_dropped"], 150)
         self.assertEqual(report["verification"]["dead_letter_produced"], 50)
         self.assertEqual(report["verification"]["consumer_total_lag"], 0)
+
+    def test_watermarked_stream_processor_and_duckdb_warehouse_sink(self) -> None:
+        demo = run_watermarked_demo()
+        self.assertTrue(demo["warehouse_reconciliation"]["conservation_verified"])
+        self.assertEqual(demo["processor_stats"]["accepted_unique"], 5)
+        self.assertEqual(demo["processor_stats"]["duplicates_dropped"], 1)
+        self.assertEqual(demo["processor_stats"]["late_events_dlq"], 1)
+        self.assertEqual(demo["processor_stats"]["invalid_events_dlq"], 1)
+        self.assertEqual(demo["warehouse_reconciliation"]["net_volume_cents"], 72_500)
+
+        bench_report = run_watermarked_benchmark(num_events=2_000, batch_size=500)
+        self.assertTrue(bench_report["warehouse_reconciliation"]["conservation_verified"])
+        self.assertGreater(bench_report["throughput"]["end_to_end_events_per_second"], 1000.0)
 
 
 if __name__ == "__main__":
