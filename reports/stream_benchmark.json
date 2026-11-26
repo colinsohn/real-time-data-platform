@@ -1,0 +1,49 @@
+{
+  "batch_latency_ms": {
+    "batches": 50,
+    "max_ms": 5.9293,
+    "min_ms": 4.335,
+    "p50_ms": 4.6984,
+    "p95_ms": 5.7342,
+    "p99_ms": 5.9293
+  },
+  "duckdb_version": "1.4.2",
+  "format_version": 1,
+  "measured_at_utc": "2026-11-26T08:35:51.387206+00:00",
+  "platform": "Darwin-arm64",
+  "processor_stats": {
+    "accepted_unique": 47051,
+    "closed_windows": 2706,
+    "duplicates_dropped": 2499,
+    "invalid_events_dlq": 0,
+    "late_events_dlq": 450,
+    "open_windows": 0,
+    "total_dlq": 450,
+    "total_received": 50000
+  },
+  "python_version": "3.14.7",
+  "throughput": {
+    "end_to_end_events_per_second": 88778.98,
+    "stream_events_per_second": 209169.21,
+    "stream_processing_wall_milliseconds": 239.041,
+    "total_wall_milliseconds": 563.196,
+    "warehouse_sink_wall_milliseconds": 324.155
+  },
+  "warehouse_reconciliation": {
+    "conservation_verified": true,
+    "dlq_records_stored": 450,
+    "gross_volume_cents": 120000000,
+    "net_volume_cents": 112949375,
+    "raw_events_stored": 47051,
+    "refund_volume_cents": 7050625,
+    "window_rollups_stored": 2706
+  },
+  "workload": {
+    "batch_size": 1000,
+    "distinct_accounts": 128,
+    "max_out_of_orderness_ms": 10000,
+    "partitions": 16,
+    "total_input_events": 50000,
+    "window_size_ms": 60000
+  }
+}
