@@ -10,7 +10,12 @@ import unittest
 from benchmark import run_benchmark as run_watermarked_benchmark
 from cmd_demo import run_demo as run_watermarked_demo
 from rt_data_platform.cli import run_benchmark
-from rt_data_platform.contract import validate_raw_event
+from rt_data_platform.contract import (
+    FieldSpec,
+    SchemaDefinition,
+    SchemaRegistry,
+    validate_raw_event,
+)
 from rt_data_platform.kafka_log import PartitionedTopicLog, kafka_murmur2, partition_for_key
 from rt_data_platform.pipeline import StreamingPipeline
 
@@ -226,6 +231,62 @@ class TestRealTimeDataPlatform(unittest.TestCase):
         bench_report = run_watermarked_benchmark(num_events=2_000, batch_size=500)
         self.assertTrue(bench_report["warehouse_reconciliation"]["conservation_verified"])
         self.assertGreater(bench_report["throughput"]["end_to_end_events_per_second"], 1000.0)
+
+    def test_schema_evolution_registry_and_dlq_replay_metadata(self) -> None:
+        registry = SchemaRegistry()
+        self.assertEqual(registry.versions(), ("1.0", "1.1"))
+
+        # Valid v1.1 event with optional 'region' attribute
+        raw_v11 = {
+            "schema_version": "1.1",
+            "event_id": "evt-v11-1",
+            "tenant_id": "tenant-alpha",
+            "event_type": "api_request",
+            "event_ts": "2026-11-26T12:00:00Z",
+            "session_id": "sess-v11",
+            "region": "us-west1",
+        }
+        ev, dlq = validate_raw_event(raw_v11, ingested_at_ms=1795651200000)
+        self.assertIsNone(dlq)
+        assert ev is not None
+        self.assertEqual(ev.schema_version, "1.1")
+        self.assertEqual(json.loads(ev.attributes_json)["region"], "us-west1")
+
+        # Breaking v2.0 candidate adding required field without default must fail BACKWARD & FULL checks
+        breaking_v2 = SchemaDefinition(
+            version="2.0",
+            fields=(
+                FieldSpec("event_id", "string", required=True),
+                FieldSpec("tenant_id", "string", required=True),
+                FieldSpec("event_type", "string", required=True),
+                FieldSpec("event_ts", "timestamp", required=True),
+                FieldSpec("session_id", "string", required=True),
+                FieldSpec("mandatory_new_field", "string", required=True, has_default=False),
+            ),
+        )
+        ok, errors = registry.check_compatibility(breaking_v2, mode="BACKWARD")
+        self.assertFalse(ok)
+        self.assertTrue(any("mandatory_new_field" in e for e in errors))
+        with self.assertRaises(ValueError):
+            registry.register(breaking_v2, compatibility="FULL")
+
+        # DLQ record carries deterministic quarantine_id and replay_eligible flag
+        _, dlq_fixable = validate_raw_event(
+            {
+                "schema_version": "1.0",
+                "event_id": "e1",
+                "tenant_id": "t1",
+                "event_type": "payment_captured",
+                "event_ts": "2026-11-26T00:00:00Z",
+                "session_id": "s1",
+                "amount_cents": -10,
+            },
+            ingested_at_ms=1795651200000,
+        )
+        assert dlq_fixable is not None
+        self.assertTrue(dlq_fixable.quarantine_id.startswith("dlq-"))
+        self.assertTrue(dlq_fixable.replay_eligible)
+
 
 
 if __name__ == "__main__":
